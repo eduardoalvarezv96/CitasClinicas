@@ -1,0 +1,71 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <!-- Botón para regresar a la página anterior -->
+      <ion-button (click)="volver()">
+        ← Volver
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Registro de Cita</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Registro de Cita</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <form class="form-cita" [formGroup]="citaForm" (ngSubmit)="registrarCita()">
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">Nombre</ion-label>
+        <ion-input type="text" formControlName="nombre"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Apellido</ion-label>
+        <ion-input type="text" formControlName="apellido"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">RUT</ion-label>
+        <ion-input type="text" formControlName="rut"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Edad</ion-label>
+        <ion-input type="number" min="0" formControlName="edad"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Especialidad</ion-label>
+        <ion-select formControlName="especialidad" placeholder="Selecciona una especialidad">
+          <ion-select-option *ngFor="let esp of especialidades" [value]="esp">{{ esp }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Clínica</ion-label>
+        <ion-select formControlName="clinica" placeholder="Selecciona una clínica">
+          <ion-select-option *ngFor="let cli of clinicas" [value]="cli">{{ cli }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Fecha</ion-label>
+        <ion-datetime formControlName="fecha" presentation="date"></ion-datetime>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Hora</ion-label>
+        <ion-datetime formControlName="hora" presentation="time"></ion-datetime>
+      </ion-item>
+    </ion-list>
+
+    <div class="btn-container">
+      <ion-button expand="block" type="submit" color="primary">Registrar Cita</ion-button>
+    </div>
+  </form>
+</ion-content>
