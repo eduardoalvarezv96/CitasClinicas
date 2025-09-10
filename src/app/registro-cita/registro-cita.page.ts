@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Location } from '@angular/common'; // 👈 necesario para ir atrás
+import { Location } from '@angular/common';
 
 import { 
   IonHeader, 
@@ -17,7 +17,11 @@ import {
   IonSelectOption, 
   IonDatetime, 
   IonButton, 
-  IonButtons 
+  IonButtons, 
+  IonCard, 
+  IonCardHeader, 
+  IonCardTitle, 
+  IonCardContent 
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -31,7 +35,8 @@ import {
     IonHeader, IonToolbar, IonTitle, IonContent,
     IonList, IonItem, IonLabel, IonInput,
     IonSelect, IonSelectOption, IonDatetime,
-    IonButton, IonButtons
+    IonButton, IonButtons,
+    IonCard, IonCardHeader, IonCardTitle, IonCardContent
   ],
 })
 export class RegistroCitaPage {
@@ -64,11 +69,18 @@ export class RegistroCitaPage {
       alert('✅ Cita registrada con éxito');
       this.citaForm.reset();
     } else {
+      this.citaForm.markAllAsTouched();
       alert('⚠️ Por favor, completa todos los campos obligatorios');
     }
   }
 
+  async openDatetime(datetime: any) {
+    if (datetime) {
+      await datetime.present();
+    }
+  }
+
   volver() {
-    this.location.back(); // 👈 vuelve a la página anterior
+    this.location.back();
   }
 }

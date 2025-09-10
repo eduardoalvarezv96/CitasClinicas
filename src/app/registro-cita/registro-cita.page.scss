@@ -1,12 +1,74 @@
-.form-cita {
+/* Centrar formulario en la página y permitir scroll */
+.content-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
   padding: 16px;
+  box-sizing: border-box;
 }
 
+/* Estilos del formulario sin fondo */
+.form-cita {
+  width: 100%;
+  max-width: 500px;
+  padding: 16px;
+  margin: auto;
+}
+
+/* Modificaciones adicionales */
 ion-item {
   margin-bottom: 12px;
-  --highlight-color-focused: #3880ff; /* Color de focus */
+  --highlight-color-focused: #3880ff;
 }
 
+/* Ajustes para ion-datetime */
+ion-datetime {
+  --min-height: 40px;
+  font-size: 14px;
+}
+
+/* Reglas para el modo oscuro */
+:host-context(.ion-color-scheme-dark) {
+  ion-item {
+    --color: #ffffff; /* Texto de los labels en blanco para modo oscuro */
+  }
+
+  ion-input {
+    --color: #ffffff; /* Texto de los inputs en blanco */
+  }
+
+  ion-label {
+    --color: #ffffff; /* Texto de los labels flotantes en blanco */
+  }
+}
+
+/*
+  Ajustes para el ion-picker en modo oscuro
+  Estos estilos son necesarios porque el picker se renderiza en la raíz del body
+  y no hereda los estilos del componente.
+*/
+.ion-color-scheme-dark ion-picker {
+  --background: #1f1f1f;
+  --color: #ffffff;
+}
+
+.ion-color-scheme-dark .picker-wrapper {
+  color: #ffffff;
+}
+
+.ion-color-scheme-dark .picker-opt.picker-opt-selected {
+  color: #ffffff;
+}
+
+.ion-color-scheme-dark .picker-below-highlight,
+.ion-color-scheme-dark .picker-above-highlight {
+  background-color: transparent !important;
+}
+
+/* Botón */
 .btn-container {
   margin-top: 20px;
   text-align: center;
