@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { CommonModule, NgFor } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, NgFor, DatePipe } from '@angular/common'; 
+import { HttpClient } from '@angular/common/http'; 
 import { 
   IonHeader, 
   IonToolbar, 
@@ -12,25 +13,33 @@ import {
   IonItem, 
   IonGrid, 
   IonRow, 
-  IonCol 
+  IonCol,
+  IonSearchbar,
+  IonCard,          
+  IonCardContent,   
+  IonIcon,          
+  IonButton,
+  IonImg,
+  IonCardHeader,
+  IonCardTitle,
 } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 
-interface Cita {
-  nombre: string;
-  rut: string;
-  fecha: string;
-  hora: string;
-  especialidad: string;
-}
+
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+
+
+import { DatabaseService, Accion } from '../services/database-service'; 
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
+  standalone: true, 
   imports: [
-    CommonModule,   // 👈 importante
-    NgFor,          // 👈 necesario para *ngFor
+    CommonModule,   
+    NgFor,          
+    DatePipe, 
     IonHeader, 
     IonToolbar, 
     IonTitle, 
@@ -42,27 +51,128 @@ interface Cita {
     IonItem,
     IonGrid,
     IonRow,
-    IonCol
+    IonCol,
+    IonSearchbar,
+    IonCard,        
+    IonCardContent, 
+    IonIcon,        
+    IonButton,
+    IonImg,
+    IonCardHeader, 
+    IonCardTitle,
   ],
 })
-export class HomePage {
-  citas: Cita[] = [
-    { nombre: 'Juan Pérez', rut: '12.345.678-9', fecha: '10-09-2025', hora: '09:00', especialidad: 'Cardiología' },
-    { nombre: 'María López', rut: '11.223.344-5', fecha: '11-09-2025', hora: '11:30', especialidad: 'Dermatología' },
-    { nombre: 'Pedro González', rut: '22.334.556-7', fecha: '12-09-2025', hora: '15:00', especialidad: 'Neurología' },
-    { nombre: 'Ana Torres', rut: '99.888.777-6', fecha: '13-09-2025', hora: '10:15', especialidad: 'Oftalmología' }
-  ];
-
-  constructor(private router : Router) {}
+export class HomePage implements OnInit {
+  acciones: Accion[] = [];
+  accionesFiltradas: Accion[] = []; 
+  
+  usuario: string = ''; 
+  horaActual: string = 'Cargando...';
 
 
+  public fotoUrl: string = ''; 
+
+  constructor(
+    private router : Router,
+    private dbService: DatabaseService,
+    private http: HttpClient 
+  ) {}
+
+  async ngOnInit() {
+    await this.dbService.crearBD(); 
+
+    await Promise.all([
+        this.cargarAcciones(),
+        this.fetchCurrentTime() 
+    ]);
+    
+    const nombreUsuario = localStorage.getItem('usuario');
+    if (nombreUsuario) {
+      this.usuario = nombreUsuario;
+    }
+  }
+
+  async takePicture() {
+    console.log('Iniciando captura de foto...');
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Uri, 
+        source: CameraSource.Camera 
+      });
+
+      this.fotoUrl = image.webPath || '';
+      console.log('Foto capturada, URL:', this.fotoUrl);
+
+    } catch (error) {
+      console.error('❌ Error al capturar la foto:', error);
+    }
+  }
+
+  
+  async fetchCurrentTime() {
+    const apiUrl = 'https://worldtimeapi.org/api/ip'; 
+    
+    try {
+      const data: any = await this.http.get(apiUrl).toPromise();
+      if (data && data.datetime) {
+        const isoDate = new Date(data.datetime);
+        const options: Intl.DateTimeFormatOptions = { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            hour12: false
+        };
+        this.horaActual = isoDate.toLocaleTimeString('es-CL', options);
+      } else {
+         this.horaActual = 'Datos no disponibles';
+      }
+    } catch (error) {
+      console.error('❌ Error al obtener la hora de la API:', error);
+      this.horaActual = 'Error de carga';
+    }
+  }
+
+
+  async recargarDatos() {
+      this.horaActual = 'Actualizando...';
+      console.log('Recargando datos...');
+      await Promise.all([
+          this.cargarAcciones(),
+          this.fetchCurrentTime() 
+      ]);
+  }
+
+  async cargarAcciones() {
+    try {
+        this.acciones = await this.dbService.getAcciones();
+        this.accionesFiltradas = this.acciones;
+        console.log('Acciones cargadas:', this.acciones);
+    } catch (error) {
+        console.error('Error al cargar acciones:', error);
+    }
+  }
+
+
+  buscar(event: any) {
+    const query = event.target.value.toLowerCase();
+    
+    if (!query || query.trim() === '') {
+      this.accionesFiltradas = this.acciones;
+      return;
+    }
+
+    this.accionesFiltradas = this.acciones.filter(accion => 
+      accion.accion.toLowerCase().includes(query)
+    );
+  }
 
   onMenuClick(option: string) {
     console.log("Opción seleccionada:", option);
 
     switch(option) {
       case 'home':
-        console.log("AKI");
         this.router.navigate(['/home']);
         break;
       case 'registro-cita':
@@ -73,5 +183,4 @@ export class HomePage {
         break;
     }
   }
-
 }

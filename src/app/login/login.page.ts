@@ -16,6 +16,7 @@ export class LoginPage implements OnInit {
   email: string = '';
   password: string = '';
   isToastOpen: boolean = false;
+  toastMensaje: string = ''
 
   constructor(private router: Router) {}
 
@@ -23,13 +24,26 @@ export class LoginPage implements OnInit {
   }
 
   login() {
-    console.log(this.email);
-    console.log(this.password);
+
+    if(this.email === ''){
+      this.toastMensaje = 'Ingrese el correo';
+      this.isToastOpen = true;
+      return;
+    }
+
+    if(this.password === ''){
+      this.toastMensaje = 'Ingrese la clave';
+      this.isToastOpen = true;
+      return;
+    }
 
     if (this.email === 'eduardo@gmail.com' && this.password === '123456') {
+      // Guardar el nombre de usuario en localStorage
+      localStorage.setItem('usuario', 'Eduardo');
       this.router.navigateByUrl('/home');
     } else {
       this.isToastOpen = true;
+      this.toastMensaje = 'Usuario o clave incorrectas'
     }
   }
 

@@ -19,14 +19,14 @@
 
   <div class="version-info">
     <span>
-      Versión 1.0.0
+      Versión 1.0.1
     </span>
   </div>
 </div>
 
 <ion-toast
     [isOpen]="isToastOpen"
-    message="Credenciales incorrectas"
+    [message]="toastMensaje"
     [duration]="5000"
     (didDismiss)="isToastOpen = false"
   ></ion-toast>
