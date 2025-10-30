@@ -9,6 +9,19 @@
       <ion-item (click)="onMenuClick('home')">Inicio (Historial)</ion-item>
       <ion-item (click)="onMenuClick('registro-cita')">Registrar citas</ion-item>
       <ion-item (click)="onMenuClick('busqueda-paciente')">Búsqueda pacientes</ion-item>
+      
+      <ion-item lines="none" class="ion-margin-top"></ion-item> 
+      <ion-item 
+        (click)="onMenuClick('logout')" 
+        button 
+        detail="false" 
+        color="danger" 
+        class="ion-margin-horizontal"
+        style="--padding-start: 10px; --padding-end: 10px; border-radius: 8px;"
+      >
+        <ion-icon name="log-out-outline" slot="start"></ion-icon>
+        Cerrar Sesión
+      </ion-item>
     </ion-list>
   </ion-content>
 </ion-menu>
@@ -32,42 +45,83 @@
   <ion-content [fullscreen]="true">
     <ion-header collapse="condense">
       <ion-toolbar>
-        <ion-title size="large">Historial de Acciones (Logs)</ion-title>
+        <ion-title size="large">Panel Principal</ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-searchbar (ionInput)="buscar($event)" placeholder="Buscar por contenido de la acción..."></ion-searchbar>
+    <ion-searchbar (ionInput)="buscar($event)" placeholder="Buscar por contenido de la acción..." class="ion-no-padding"></ion-searchbar>
     
-    <ion-card color="tertiary" class="ion-margin-horizontal ion-margin-top">
-      <ion-card-content class="ion-text-center">
-        <h3 class="ion-no-margin" style="font-weight: bold; color: white;">Hora Local Actual (API)</h3>
-        <p style="font-size: 1.8em; font-weight: 700; color: white;">{{ horaActual || 'Cargando...' }}</p>
-      </ion-card-content>
-    </ion-card>
+    <ion-grid class="ion-margin-vertical">
+      <ion-row class="ion-align-items-center ion-padding-horizontal">
+        
+        <ion-col size="5">
+          <ion-card color="tertiary" class="time-card">
+            <ion-card-content class="ion-text-center">
+              <p class="time-label">Hora Local (API)</p>
+              <h3 class="time-value">{{ horaActual || 'Cargando...' }}</h3>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        
+        <ion-col size="7">
+          <ion-button expand="block" color="secondary" (click)="takePicture()" class="camera-button">
+            <ion-icon name="camera-outline" slot="start"></ion-icon>
+            Capturar Foto
+          </ion-button>
+        </ion-col>
+        
+      </ion-row>
+    </ion-grid>
     
-    <ion-button expand="full" color="secondary" (click)="takePicture()" class="ion-margin">
-      <ion-icon name="camera-outline" slot="start"></ion-icon>
-      Capturar Foto (API Nativa)
-    </ion-button>
-    
-    <ion-card *ngIf="fotoUrl" class="ion-margin">
+    <ion-card *ngIf="fotoUrl" class="ion-margin-horizontal">
       <ion-card-header>
         <ion-card-title>Última Foto Capturada</ion-card-title>
       </ion-card-header>
       <ion-img [src]="fotoUrl"></ion-img> 
     </ion-card>
 
-    <ion-grid class="ion-padding">
-    <ion-row class="ion-text-center ion-align-items-center" style="background-color: #f4f4f4; border-bottom: 1px solid #ddd; font-weight: 600;">
+    <h2 class="ion-padding-start ion-padding-top">🗓️ Próximas Citas</h2>
+    <ion-grid class="ion-padding-bottom">
+      
+      <ion-row class="header-row ion-text-center ion-align-items-center">
+        <ion-col size="4">Paciente</ion-col>
+        <ion-col size="4">Especialidad / Clínica</ion-col>
+        <ion-col size="4">Fecha y Hora</ion-col>
+      </ion-row>
+
+      <ion-row *ngFor="let cita of citas" class="data-row ion-align-items-center ion-padding-horizontal">
+        <ion-col size="4" class="data-col ion-text-start">
+            {{ cita.nombre }} {{ cita.apellido }}
+        </ion-col>
+        <ion-col size="4" class="data-col ion-text-start">
+            <strong>{{ cita.especialidad }}</strong><br><small>{{ cita.clinica }}</small>
+        </ion-col>
+        <ion-col size="4" class="data-col ion-text-end">
+            {{ cita.fechaCita | date:'dd/MM HH:mm' }}
+        </ion-col>
+      </ion-row>
+      
+      <ion-row *ngIf="citas.length === 0" class="ion-padding">
+        <ion-col class="ion-text-center ion-text-medium">
+          No hay citas registradas en la base de datos.
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <hr class="ion-margin-vertical"> 
+
+    <h2 class="ion-padding-start">📜 Historial de Acciones (Logs)</h2>
+    <ion-grid>
+      <ion-row class="header-row ion-text-center ion-align-items-center">
         <ion-col size="auto">ID</ion-col>
         <ion-col>Registro de Acción</ion-col>
         <ion-col size="auto">Fecha y Hora</ion-col>
       </ion-row>
 
-      <ion-row *ngFor="let accion of accionesFiltradas" class="ion-align-items-center" style="border-bottom: 1px dashed #eee;">
-        <ion-col size="auto" class="ion-text-center">#{{ accion.id }}</ion-col>
-        <ion-col class="ion-text-wrap">{{ accion.accion }}</ion-col>
-        <ion-col size="auto" class="ion-text-end">{{ accion.fecha | date:'dd/MM/yyyy HH:mm' }}</ion-col>
+      <ion-row *ngFor="let accion of accionesFiltradas" class="data-row ion-align-items-center ion-padding-horizontal">
+        <ion-col size="auto" class="ion-text-center data-col">#{{ accion.id }}</ion-col>
+        <ion-col class="ion-text-wrap data-col ion-text-start">{{ accion.accion }}</ion-col>
+        <ion-col size="auto" class="ion-text-end data-col">{{ accion.fecha | date:'dd/MM/yyyy HH:mm' }}</ion-col>
       </ion-row>
       
       <ion-row *ngIf="accionesFiltradas.length === 0" class="ion-padding">

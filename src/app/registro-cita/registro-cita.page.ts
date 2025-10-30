@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { DatabaseService } from '../services/database-service'; // Servicio para SQLite
+// Importamos Cita para tipificar, aunque no es estrictamente necesario aquí
+import { DatabaseService } from '../services/database-service'; 
 
 // Importaciones Standalone de Ionic
 import { 
@@ -21,10 +22,7 @@ import {
  IonDatetime, 
  IonButton, 
  IonButtons, 
- IonCard, 
- IonCardHeader, 
- IonCardTitle, 
- IonCardContent 
+ // Eliminadas las importaciones de Card si no se usan en el HTML
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -39,7 +37,6 @@ import {
  IonList, IonItem, IonLabel, IonInput,
  IonSelect, IonSelectOption, IonDatetime,
  IonButton, IonButtons,
- IonCard, IonCardHeader, IonCardTitle, IonCardContent
  ],
 })
 export class RegistroCitaPage {
@@ -77,22 +74,31 @@ export class RegistroCitaPage {
   if (this.citaForm.valid) {
    const citaData = this.citaForm.value;
    
+   // 1. Registrar la CITA ESTRUCTURADA en la tabla 'citas'
+   try {
+       await this.dbService.addCita(citaData);
+   } catch (error) {
+       console.error('Error al guardar la cita estructurada:', error);
+       this.presentToast('⚠️ Error al guardar la cita en la base de datos.', 'danger');
+       return; // Detener si falla la inserción principal
+   }
    
+   // 2. Registrar la ACCIÓN (LOG) en la tabla 'acciones'
    const paciente = `${citaData.nombre} ${citaData.apellido}`;
    const especialidad = citaData.especialidad;
-   const fechaCita = new Intl.DateTimeFormat('es-CL', { 
-            dateStyle: 'short' 
-        }).format(new Date(citaData.fecha));
-
-   const accion = `Cita registrada para ${paciente} con ${especialidad} en ${citaData.clinica} el ${fechaCita}`;
    
- 
+   // Formatear la fecha para el mensaje de log
+   const fechaCita = new Intl.DateTimeFormat('es-CL', { 
+    }).format(new Date(citaData.fecha));
+
+   const accion = `Cita registrada para ${paciente} con ${especialidad} en ${citaData.clinica} el ${fechaCita} a las ${citaData.hora}`;
+   
    await this.dbService.addAccion(accion);
    
 
    console.log('✅ Cita registrada (y acción guardada localmente):', citaData);
       
-   this.presentToast('✅ Cita registrada con éxito. Verifique su historial local.', 'success');
+   this.presentToast('✅ Cita registrada con éxito. Verifique su historial y lista de citas.', 'success');
    
    this.citaForm.reset();
   } else {

@@ -25,11 +25,10 @@ import {
 } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 
-
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
-
-import { DatabaseService, Accion } from '../services/database-service'; 
+// Importa Accion y la nueva interfaz Cita desde el servicio
+import { DatabaseService, Accion, Cita } from '../services/database-service'; 
 
 @Component({
   selector: 'app-home',
@@ -66,9 +65,11 @@ export class HomePage implements OnInit {
   acciones: Accion[] = [];
   accionesFiltradas: Accion[] = []; 
   
+  // 📌 Propiedad para la lista de citas
+  citas: Cita[] = []; 
+  
   usuario: string = ''; 
   horaActual: string = 'Cargando...';
-
 
   public fotoUrl: string = ''; 
 
@@ -83,15 +84,29 @@ export class HomePage implements OnInit {
 
     await Promise.all([
         this.cargarAcciones(),
+        this.cargarCitas(), // 📌 Llamada a cargar citas
         this.fetchCurrentTime() 
     ]);
     
+    // Carga el nombre de usuario
     const nombreUsuario = localStorage.getItem('usuario');
     if (nombreUsuario) {
       this.usuario = nombreUsuario;
     }
   }
 
+  // 📌 Lógica de Carga de Citas
+  async cargarCitas() {
+    try {
+        // Llama al nuevo método getCitas()
+        this.citas = await this.dbService.getCitas(); 
+        console.log('Citas cargadas:', this.citas);
+    } catch (error) {
+        console.error('Error al cargar citas:', error);
+    }
+  }
+
+  // Lógica de Captura de Foto (API Nativa)
   async takePicture() {
     console.log('Iniciando captura de foto...');
     try {
@@ -110,7 +125,7 @@ export class HomePage implements OnInit {
     }
   }
 
-  
+  // Lógica de Carga de Hora
   async fetchCurrentTime() {
     const apiUrl = 'https://worldtimeapi.org/api/ip'; 
     
@@ -134,16 +149,18 @@ export class HomePage implements OnInit {
     }
   }
 
-
+  // Lógica de Recarga
   async recargarDatos() {
       this.horaActual = 'Actualizando...';
       console.log('Recargando datos...');
       await Promise.all([
           this.cargarAcciones(),
+          this.cargarCitas(), // 📌 Recarga de citas
           this.fetchCurrentTime() 
       ]);
   }
 
+  // Lógica de Carga de Acciones (Logs)
   async cargarAcciones() {
     try {
         this.acciones = await this.dbService.getAcciones();
@@ -154,7 +171,7 @@ export class HomePage implements OnInit {
     }
   }
 
-
+  // Lógica de Búsqueda (Filtro) - solo busca en acciones
   buscar(event: any) {
     const query = event.target.value.toLowerCase();
     
@@ -168,6 +185,17 @@ export class HomePage implements OnInit {
     );
   }
 
+  // Lógica de Cerrar Sesión
+  logout() {
+    console.log('Cerrando sesión...');
+    
+    localStorage.removeItem('usuario'); 
+    sessionStorage.removeItem('isLoggedIn'); 
+
+    this.router.navigateByUrl('/login');
+  }
+
+  // Manejo de Clics del Menú
   onMenuClick(option: string) {
     console.log("Opción seleccionada:", option);
 
@@ -180,6 +208,9 @@ export class HomePage implements OnInit {
         break;
       case 'busqueda-paciente':
         this.router.navigate(['/busqueda-paciente']);
+        break;
+      case 'logout':
+        this.logout();
         break;
     }
   }

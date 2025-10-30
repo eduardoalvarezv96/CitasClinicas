@@ -1,32 +1,47 @@
 <div class="login-container">
   <div class="logo-container">
-    <img src="../../assets/img/user.png" alt="Logo" class="logo-img" />
+    <img src="../../assets/img/user.png" alt="Logo de Usuario" class="logo-img" />
   </div>
 
-  <form (submit)="login()">
+  <form (submit)="login($event)">
     <ion-item>
-      <ion-input label="Correo" type="email" [(ngModel)]="email" name="email" placeholder="usuario@dominio.cl"></ion-input>
+      <ion-input
+        #emailInput
+        label="Correo Electrónico"
+        labelPlacement="floating"
+        type="email"
+        [(ngModel)]="email"
+        name="email"
+        placeholder="email@dominio.com">
+      </ion-input>
     </ion-item>
-
-    <ion-item class="ion-margin-top">
-      <ion-input type="password" label="Clave" [(ngModel)]="password" name="password" value="NeverGonnaGiveYouUp">
+  
+    <ion-item> <ion-input
+        #passwordInput
+        label="Contraseña"
+        labelPlacement="floating"
+        type="password"
+        [(ngModel)]="password"
+        name="password">
         <ion-input-password-toggle slot="end"></ion-input-password-toggle>
       </ion-input>
     </ion-item>
 
-    <ion-button expand="block" type="submit">Iniciar sesión</ion-button>
+    <ion-button expand="block" type="submit">
+      Iniciar sesión
+    </ion-button>
   </form>
 
   <div class="version-info">
     <span>
-      Versión 1.0.1
+      Versión 1.0.0
     </span>
   </div>
 </div>
 
 <ion-toast
-    [isOpen]="isToastOpen"
-    [message]="toastMensaje"
-    [duration]="5000"
-    (didDismiss)="isToastOpen = false"
-  ></ion-toast>
+  [isOpen]="isToastOpen"
+  message="{{ toastMensaje }}"
+  [duration]="2000"
+  (didDismiss)="isToastOpen = false">
+</ion-toast>

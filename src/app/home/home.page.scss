@@ -1,20 +1,84 @@
+/* Estilos Globales de la cuadrícula de datos */
 .header-row {
-  background-color: #53a0e3;
+  background-color: var(--ion-color-primary); /* Usa el color principal de Ionic */
+  color: white; 
   font-weight: bold;
-  border-bottom: 1px solid #53a0e3;
+  font-size: 0.95em; /* Ligeramente más legible */
+  padding: 10px 0; /* Más espacio vertical */
+  border-radius: 4px 4px 0 0; /* Bordes redondeados en la cabecera */
 }
 
-ion-row {
-  border-bottom: 1px solid #53a0e3;
-  padding: 8px 0;
+.data-row {
+  border-bottom: 1px solid var(--ion-color-light); /* Línea más sutil */
+  padding: 10px 0;
+  transition: background-color 0.2s ease;
 }
 
-ion-col {
-  text-align: center;
-  font-size: 14px;
+.data-row:nth-child(even) {
+  background-color: #fcfcfc; /* Alterna el color de las filas para mejorar la legibilidad */
 }
 
-/* 👇 hace que el menú muestre la manito */
+.data-row:last-child {
+  border-bottom: none; 
+}
+
+.data-col {
+  /* Mantener estilos de tamaño y alineación definidos previamente */
+  font-size: 13px; 
+  line-height: 1.3; /* Mejor espaciado de línea para el texto largo */
+  padding: 0 4px;
+}
+
+/* ------------------------------------- */
+/* Estilos para la Hora y Botón (Sección Superior) */
+/* ------------------------------------- */
+
+/* Contenedor de la Card de la Hora (más compacto) */
+.time-card {
+  margin: 0; 
+  box-shadow: none; /* Quitamos la sombra para un look más plano */
+  border: 1px solid var(--ion-color-tertiary); /* Agregamos un borde sutil */
+  border-radius: 8px; /* Bordes suaves */
+}
+
+.time-card ion-card-content {
+  padding: 10px 8px !important; /* Reduce el padding */
+}
+
+.time-label {
+  font-weight: 500;
+  font-size: 0.7em; 
+  margin-bottom: 2px;
+  margin-top: 0;
+  color: white;
+  opacity: 0.8; /* Hace la etiqueta menos prominente */
+}
+
+.time-value {
+  font-size: 1.4em; /* Ligeramente más pequeño */
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0;
+  color: white;
+}
+
+/* Estilos para el Botón de la Cámara (más compacto) */
+.camera-button {
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --border-radius: 8px; /* Bordes redondeados para el botón */
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+/* Estilos para la barra de búsqueda */
+ion-searchbar {
+    --box-shadow: none; /* Elimina la sombra por defecto */
+    border-bottom: 1px solid var(--ion-color-light);
+    padding-bottom: 0;
+}
+
+/* Opcional: Estilo de hover en el menú */
 ion-menu ion-item {
   cursor: pointer;
 }

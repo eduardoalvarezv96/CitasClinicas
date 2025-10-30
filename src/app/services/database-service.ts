@@ -2,11 +2,24 @@ import { Platform } from '@ionic/angular';
 import { Injectable } from '@angular/core';
 import { SQLite, SQLiteObject } from '@awesome-cordova-plugins/sqlite/ngx';
 
-// Interfaz para el objeto Acción, útil para la tipificación
+// 1. Interfaz para el objeto Acción (Logs)
 export interface Accion {
   id: number;
   accion: string;
   fecha: string;
+}
+
+// 2. Interfaz para el objeto Cita (Registro estructurado)
+export interface Cita {
+    id: number;
+    nombre: string;
+    apellido: string;
+    rut: string;
+    edad: number;
+    especialidad: string;
+    clinica: string;
+    fechaCita: string;     // Fecha y hora de la cita
+    registroFecha: string; // Fecha en que se registró la acción
 }
 
 @Injectable({
@@ -15,14 +28,14 @@ export interface Accion {
 export class DatabaseService {
 
   private db: SQLiteObject | null = null;
-  private readonly DB_NAME = 'medicina_app.db'; // Nombre de la BD más genérico
+  private readonly DB_NAME = 'medicina_app.db';
 
   constructor(private sqlite: SQLite, private platform: Platform) {}
 
-  /**
-   * Inicializa la base de datos y crea las tablas necesarias (usuarios y acciones).
-   * Debe llamarse al inicio de la aplicación (e.g., en el constructor del App component).
-   */
+  // -----------------------------------------------------------------
+  // 🚀 INICIALIZACIÓN DE LA BASE DE DATOS
+  // -----------------------------------------------------------------
+
   async crearBD(): Promise<void> {
     try {
       await this.platform.ready();
@@ -34,28 +47,43 @@ export class DatabaseService {
 
       console.log("Base de datos creada/abierta exitosamente.");
 
-      // 1. Tabla para usuarios (existente)
+      // 1. Tabla de Usuarios
       await this.db.executeSql(
         'CREATE TABLE IF NOT EXISTS usuarios (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, email TEXT, password TEXT)', []
       );
       console.log("Tabla 'usuarios' verificada.");
 
-      // 2. Tabla para registrar acciones/logs (nueva, requerida por registro-citas.ts)
+      // 2. Tabla de Acciones (Logs)
       await this.db.executeSql(
         'CREATE TABLE IF NOT EXISTS acciones (id INTEGER PRIMARY KEY AUTOINCREMENT, accion TEXT NOT NULL, fecha TEXT NOT NULL)', []
       );
       console.log("Tabla 'acciones' verificada.");
+      
+      // 3. Tabla de Citas (Registro estructurado)
+      await this.db.executeSql(
+        `CREATE TABLE IF NOT EXISTS citas (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nombre TEXT NOT NULL,
+          apellido TEXT NOT NULL,
+          rut TEXT NOT NULL,
+          edad INTEGER,
+          especialidad TEXT NOT NULL,
+          clinica TEXT NOT NULL,
+          fechaCita TEXT NOT NULL, 
+          registroFecha TEXT NOT NULL
+        )`, []
+      );
+      console.log("Tabla 'citas' verificada.");
 
     } catch (e) {
       console.error("❌ Ocurrió un error al crear la base de datos o tablas", e);
     }
   }
-  
-  /**
-   * Agrega un nuevo registro de acción (log de una cita) a la tabla 'acciones'.
-   * Este es el método que se requiere en registro-citas.ts.
-   * @param accion Descripción de la acción a guardar.
-   */
+
+  // -----------------------------------------------------------------
+  // 📝 MÉTODOS DE ACCIONES (LOGS)
+  // -----------------------------------------------------------------
+
   async addAccion(accion: string): Promise<void> {
     if (!this.db) {
       console.error('La base de datos no está inicializada. No se puede guardar la acción.');
@@ -63,7 +91,6 @@ export class DatabaseService {
     }
 
     try {
-      // Usamos el formato ISO para guardar la fecha, fácil de ordenar y parsear.
       const fecha = new Date().toISOString(); 
       
       await this.db.executeSql(
@@ -76,9 +103,6 @@ export class DatabaseService {
     }
   }
   
-  /**
-   * Obtiene todos los registros de acciones (historial).
-   */
   async getAcciones(): Promise<Accion[]> {
     if (!this.db) {
       console.error('La base de datos no está inicializada.');
@@ -98,9 +122,64 @@ export class DatabaseService {
       return [];
     }
   }
+  
+  // -----------------------------------------------------------------
+  // 🏥 MÉTODOS DE CITAS
+  // -----------------------------------------------------------------
 
+  async addCita(citaData: any): Promise<void> {
+    if (!this.db) {
+      console.error('La base de datos no está inicializada. No se puede guardar la cita.');
+      return;
+    }
 
-  // --- Métodos de Usuarios (Mantenidos del original) ---
+    try {
+      const registroFecha = new Date().toISOString();
+      const sql = `
+        INSERT INTO citas 
+        (nombre, apellido, rut, edad, especialidad, clinica, fechaCita, registroFecha) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+      
+      await this.db.executeSql(sql, [
+        citaData.nombre, 
+        citaData.apellido, 
+        citaData.rut, 
+        citaData.edad, 
+        citaData.especialidad, 
+        citaData.clinica, 
+        `${citaData.fecha} ${citaData.hora}`, 
+        registroFecha
+      ]);
+      console.log(`✅ Cita para ${citaData.nombre} guardada en SQLite.`);
+    } catch (e) {
+      console.error('❌ Error al guardar la cita', e);
+    }
+  }
+
+  async getCitas(): Promise<Cita[]> {
+    if (!this.db) {
+      console.error('La base de datos no está inicializada.');
+      return [];
+    }
+    
+    try {
+      const result = await this.db.executeSql('SELECT * FROM citas ORDER BY id DESC', []);
+      const citas: Cita[] = [];
+      
+      for (let i = 0; i < result.rows.length; i++) {
+        citas.push(result.rows.item(i));
+      }
+      return citas;
+    } catch (e) {
+      console.error('Error al obtener citas', e);
+      return [];
+    }
+  }
+
+  // -----------------------------------------------------------------
+  // 👤 MÉTODOS DE USUARIOS (Ejemplos)
+  // -----------------------------------------------------------------
 
   async insertarUsuario() {
     try {
@@ -108,17 +187,17 @@ export class DatabaseService {
         console.log('La base de datos no está inicializada.');
         return;
       }
-      // Ejemplo de inserción de un usuario
-      const nombre = 'Juan Pérez';
-      const email = 'juan.perez@example.com';
+      // Asegúrate de que este email coincida con el usado en login.page.ts
+      const nombre = 'Eduardo';
+      const email = 'eduardo@gmail.com'; 
       const password = '123456';
 
       await this.db.executeSql(
-        'INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)',
+        'INSERT OR IGNORE INTO usuarios (nombre, email, password) VALUES (?, ?, ?)',
         [nombre, email, password]
       );
 
-      console.log('Usuario de ejemplo insertado correctamente');
+      console.log('Usuario de ejemplo (Eduardo) insertado correctamente (o ya existía).');
     } catch (e) {
       console.error('Error al insertar usuario', e);
     }
